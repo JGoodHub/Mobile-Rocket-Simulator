@@ -22,10 +22,10 @@ public class CelestialBody : MonoBehaviour
             return;
 
         _rigidbody.AddForce(_initialVelocity, ForceMode.VelocityChange);
-
-        KeplerOrbitElements keplerOrbitElements = KeplerOrbitElements.FromCartesianStateVector(transform.position, _initialVelocity, (float)_parent.mass, _rigidbody.mass);
+        
+        KeplerOrbitElements keplerOrbitElements = KeplerOrbitElements.FromCartesianStateVector(transform.position, _initialVelocity, (float) _parent.mass, _rigidbody.mass);
         Debug.Log(keplerOrbitElements);
-
+        
         keplerOrbitElements.GetOrbitalPath();
     }
 
@@ -37,12 +37,12 @@ public class CelestialBody : MonoBehaviour
         float distance = Vector3.Distance(transform.position, _parent.transform.position);
         double force = GRAVITATIONAL_CONSTANT * ((_parent.mass * _rigidbody.mass) / Mathf.Pow(distance, 2f));
 
-        _rigidbody.AddForce((_parent.transform.position - transform.position).normalized * (float)force);
+        _rigidbody.AddForce((_parent.transform.position - transform.position).normalized * (float) force);
 
         if (logOrbit)
         {
             // logOrbit = false;
-            KeplerOrbitElements keplerOrbitElements = KeplerOrbitElements.FromCartesianStateVector(_rigidbody.position, _rigidbody.velocity, (float)_parent.mass, _rigidbody.mass);
+            KeplerOrbitElements keplerOrbitElements = KeplerOrbitElements.FromCartesianStateVector(_rigidbody.position, _rigidbody.velocity, (float) _parent.mass, _rigidbody.mass);
             Debug.Log(keplerOrbitElements);
         }
     }
@@ -83,12 +83,16 @@ public struct KeplerOrbitElements
     {
         KeplerOrbitElements elements = new KeplerOrbitElements();
 
+        // Constants
+        const float twoPI = Mathf.PI * 2f;
+
         elements.Position = p;
         elements.Velocity = r;
 
-        float gravParam = (float)(OrbitalConstants.GRAVITATIONAL_CONSTANT * (m1 + m2)); // Gravitational parameter
+        float gravParam = (float) (OrbitalConstants.GRAVITATIONAL_CONSTANT * (m1 + m2)); // Gravitational parameter
 
         Vector3 orbMom = InvCross(p, r); // Orbital momentum
+        Debug.DrawRay(Vector3.zero, orbMom, Color.yellow, 999f);
 
         elements.Inclination = Mathf.Acos(orbMom.y / orbMom.magnitude); // Inclination
 
@@ -101,23 +105,28 @@ public struct KeplerOrbitElements
 
         Vector3 n = InvCross(Vector3.up, orbMom); // Ascending node vector
         if (Mathf.Abs(elements.Inclination) < 0.01f * Mathf.Deg2Rad || Mathf.Abs(elements.Inclination) > 179.99f * Mathf.Deg2Rad)
-            n = Vector3.forward;
+            n = Vector3.right;
+        
+        Debug.DrawRay(Vector3.zero, n, Color.red, 999f);
 
         elements.ArgumentOfPeriapsis = Mathf.Acos(Vector3.Dot(n, ev) / (n.magnitude * ev.magnitude)); // Argument of periapsis
         if (ev.y <= 0)
-            elements.ArgumentOfPeriapsis = (2f * Mathf.PI) - elements.ArgumentOfPeriapsis;
+            elements.ArgumentOfPeriapsis = twoPI - elements.ArgumentOfPeriapsis;
 
-        elements.LongitudeOfAscendingNode = Mathf.Acos(n.z / n.magnitude); // Longitude of the ascending node
-        if (n.x < 0)
-            elements.LongitudeOfAscendingNode = (2f * Mathf.PI) - elements.LongitudeOfAscendingNode;
+        if (Math.Abs(elements.ArgumentOfPeriapsis - twoPI) < Mathf.Epsilon)
+            elements.ArgumentOfPeriapsis = 0f;
+
+        elements.LongitudeOfAscendingNode = Mathf.Acos(n.x / n.magnitude); // Longitude of the ascending node
+        if (n.z < 0)
+            elements.LongitudeOfAscendingNode = twoPI - elements.LongitudeOfAscendingNode;
 
         elements.TrueAnomaly = Mathf.Acos(Vector3.Dot(ev, p) / (ev.magnitude * p.magnitude)); // True anomaly
         if (Vector3.Dot(p, r) < 0)
-            elements.TrueAnomaly = (2f * Mathf.PI) - elements.TrueAnomaly;
+            elements.TrueAnomaly = twoPI - elements.TrueAnomaly;
 
         elements.EccentricAnomaly = Mathf.Atan2(Mathf.Sin(elements.TrueAnomaly) * Mathf.Sqrt(1 - (elements.Eccentricity * elements.Eccentricity)), elements.Eccentricity + Mathf.Cos(elements.TrueAnomaly)); // Eccentricity anomaly
         if (elements.EccentricAnomaly < 0f)
-            elements.EccentricAnomaly = (2f * Mathf.PI) + elements.EccentricAnomaly;
+            elements.EccentricAnomaly = twoPI + elements.EccentricAnomaly;
 
         elements.MeanAnomaly = elements.EccentricAnomaly - (elements.Eccentricity * Mathf.Sin(elements.EccentricAnomaly)); // Mean anomaly
         elements.MeanMotion = Mathf.Sqrt(gravParam / Mathf.Pow(elements.SemiMajorAxis, 3)); // Mean motion
@@ -125,7 +134,7 @@ public struct KeplerOrbitElements
         elements.ApoapsisRadius = (1 + elements.Eccentricity) * elements.SemiMajorAxis;
         elements.PeriapsisRadius = (1 - elements.Eccentricity) * elements.SemiMajorAxis;
 
-        elements.OrbitalPeriod = 2f * Mathf.PI * Mathf.Sqrt(Mathf.Pow(elements.SemiMajorAxis, 3) / gravParam);
+        elements.OrbitalPeriod = twoPI * Mathf.Sqrt(Mathf.Pow(elements.SemiMajorAxis, 3) / gravParam);
 
         Debug.DrawRay(Vector3.zero, ev.normalized * elements.PeriapsisRadius, Color.blue, 999f);
         Debug.DrawRay(Vector3.zero, -ev.normalized * elements.ApoapsisRadius, Color.blue, 999f);
@@ -206,39 +215,15 @@ public struct KeplerOrbitElements
         x = Mathf.Cos(LongitudeOfAscendingNode) * tempX - Mathf.Sin(LongitudeOfAscendingNode) * y;
         y = Mathf.Sin(LongitudeOfAscendingNode) * tempX + Mathf.Cos(LongitudeOfAscendingNode) * y;
 
-        return new Vector3(x, y, z);
+        return new Vector3(-x, z, y);
     }
 
     public List<Vector3> GetOrbitalPath()
     {
-        float timeStep = 0.5f;
-        float time = 0f;
-        List<Vector3> orbitLinePositions = new List<Vector3>();
-
-        while (time < OrbitalPeriod)
-        {
-            float iterationMean = MeanAnomaly + (MeanMotion * time);
-
-            // Convert mean to eccentric
-            float iterationEccentric = MeanToEccentric(iterationMean);
-            orbitLinePositions.Add(GetPositionInOrbit(iterationEccentric));
-
-            // Convert eccentric to true
-            //float iterationTrue = EccentricToTrue(iterationEccentric);
-
-            // Find position based on true
+        List<Vector3> orbitPathPoints = new List<Vector3>();
 
 
-            time += timeStep;
-        }
-
-        for (int i = 0; i < orbitLinePositions.Count - 1; i++)
-        {
-            Debug.DrawLine(orbitLinePositions[i], orbitLinePositions[i + 1], Color.red, 999);
-        }
-
-
-        return orbitLinePositions;
+        return orbitPathPoints;
     }
 
     public static Vector3 InvCross(Vector3 a, Vector3 b) => Vector3.Cross(a, b) * -1f;
@@ -251,15 +236,16 @@ public struct KeplerOrbitElements
             $"Semi Major Axis: {SemiMajorAxis}m\n" +
             $"Semi Minor Axis: {SemiMinorAxis}m\n" +
             $"Eccentricity: {Eccentricity}\n" +
-            $"Argument Of Periapsis: {ArgumentOfPeriapsis}r {ArgumentOfPeriapsis * Mathf.Rad2Deg}°\n" +
-            $"Longitude Of Ascending Node: {LongitudeOfAscendingNode}r {LongitudeOfAscendingNode * Mathf.Rad2Deg}°\n" +
+            $"Longitude Of Ascending Node: {LongitudeOfAscendingNode}r {LongitudeOfAscendingNode * Mathf.Rad2Deg}° CC\n" +
+            $"Argument Of Periapsis: {ArgumentOfPeriapsis}r {ArgumentOfPeriapsis * Mathf.Rad2Deg}° CC\n" +
             $"Inclination: {Inclination}r {Inclination * Mathf.Rad2Deg}°\n" +
             $"Mean Anomaly:{MeanAnomaly}r {MeanAnomaly * Mathf.Rad2Deg}°\n" +
             $"True Anomaly:{TrueAnomaly}r {TrueAnomaly * Mathf.Rad2Deg}°\n" +
-            $"Eccentric  Anomaly:{EccentricAnomaly}r {EccentricAnomaly * Mathf.Rad2Deg}°\n" +
+            $"Eccentric Anomaly:{EccentricAnomaly}r {EccentricAnomaly * Mathf.Rad2Deg}°\n" +
             $"Apoapsis Radius: {ApoapsisRadius}m\n" +
             $"Periapsis Radius: {PeriapsisRadius}m\n" +
-            $"Orbital Period: {OrbitalPeriod}s";
+            $"Orbital Period: {OrbitalPeriod}s\n" +
+            $"Mean Motion: {MeanMotion}r/s {MeanMotion * Mathf.Rad2Deg}°/s";
     }
 
 }

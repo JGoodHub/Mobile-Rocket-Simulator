@@ -15,7 +15,9 @@ public class Planet : SceneSingleton<Planet>
 
     [SerializeField] private float _surfaceGravity;
 
-    private double MassSqrd => _mass * _mass;
+    public float RadiusSeaLevel => _radiusSeaLevel;
+
+    public double Mass => _mass;
 
     private Camera _camera;
 
@@ -41,39 +43,12 @@ public class Planet : SceneSingleton<Planet>
         return Vector3.Distance(target.position, transform.position) - _radiusSeaLevel;
     }
 
-    public void ApplyGravityPull(Rigidbody secondBody)
+    public void ApplyGravityPull(Rigidbody secondBody, Vector3 rocketRealWorldPosition)
     {
-        float distance = Vector3.Distance(transform.position, secondBody.position);
-        double force = GRAVITATIONAL_CONSTANT * ((_mass * secondBody.mass) / Mathf.Pow(distance, 2f));
+        float distance = rocketRealWorldPosition.magnitude;
+        double force = GRAVITATIONAL_CONSTANT * ((_mass * secondBody.mass) / (distance * distance));
 
-        secondBody.AddForce((transform.position - secondBody.position).normalized * (float) force);
-    }
-
-    public void CalculateApoAndPeriAltitudes(Vector3 position, Vector3 velocity, out float apoapsis, out float periapsis)
-    {
-        float gravitationalParameter = (float) (GRAVITATIONAL_CONSTANT * _mass);
-
-        float specificOrbitalEnergy = (velocity.magnitude / 2) - (gravitationalParameter / position.magnitude);
-
-        float semiMajorAxis = gravitationalParameter / (2 * specificOrbitalEnergy);
-
-        Vector3 specificAngularMomentum = Vector3.Cross(position, velocity);
-
-        Vector3 eccentricityVector = (Vector3.Cross(velocity, specificAngularMomentum) / gravitationalParameter) - (position.normalized);
-        float orbitalEccentricity = eccentricityVector.magnitude;
-
-        Vector3 perifocalUnitVector = eccentricityVector.normalized;
-
-        Vector3 periapsisVector = semiMajorAxis * (1 - orbitalEccentricity) * perifocalUnitVector;
-        Vector3 apoapsisVector = semiMajorAxis * (1 + orbitalEccentricity) * perifocalUnitVector;
-
-        periapsis = Vector3.Distance(transform.position, periapsisVector);
-        apoapsis = Vector3.Distance(transform.position, apoapsisVector);
-
-        Debug.DrawLine(transform.position, periapsisVector, Color.red);
-        Debug.DrawLine(transform.position, apoapsisVector, Color.green);
-
-        Debug.Log($"{transform.position} {apoapsisVector} {periapsisVector}");
+        secondBody.AddForce(-rocketRealWorldPosition.normalized * (float) force);
     }
 
     private void OnDrawGizmos()

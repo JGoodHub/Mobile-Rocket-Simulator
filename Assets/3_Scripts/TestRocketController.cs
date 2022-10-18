@@ -27,6 +27,8 @@ public class TestRocketController : SceneSingleton<TestRocketController>
     {
         _throttleInput.value = 0;
         _defaultParticlesPerSecond = _rocketExhaustPartSys.emission.rateOverTime.constant;
+        
+        Debug.Log(GetRealPosition());
     }
 
     private void Update()
@@ -77,7 +79,7 @@ public class TestRocketController : SceneSingleton<TestRocketController>
     private void FixedUpdate()
     {
         Rigidbody.AddForce(_thrusterTransform.forward * _thrust);
-        Planet.Instance.ApplyGravityPull(_rigidbody);
+        Planet.Instance.ApplyGravityPull(_rigidbody, GetRealPosition());
     }
 
     public float GetThrottle()
@@ -88,6 +90,16 @@ public class TestRocketController : SceneSingleton<TestRocketController>
     public float GetThrust()
     {
         return _maxThrust * _throttleInput.value;
+    }
+
+    public Vector3 GetRealPosition()
+    {
+        return transform.position - FloatingOrigin.Instance.transform.position;
+    }
+    
+    public KeplerOrbitElements ComputeRocketOrbitalElements()
+    {
+        return KeplerOrbitElements.FromCartesianStateVector(GetRealPosition(), _rigidbody.velocity, (float) Planet.Instance.Mass);
     }
 
 }
