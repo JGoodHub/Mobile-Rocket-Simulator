@@ -42,7 +42,7 @@ public class StatsPanel : MonoBehaviour
 
         _apoapsisText.text = $"{apoapsisAltitude.ToString(CultureInfo.CurrentCulture).PadLeft(7, '0')}m";
         _periapsisText.text = $"{periapsisAltitude.ToString(CultureInfo.CurrentCulture).PadLeft(7, '0')}m";
-        _inclinationText.text = $"Inclination: {Mathf.Round(keplerOrbitElements.Inclination * 10f) / 10f}°";
+        _inclinationText.text = $"Inclination: {Mathf.Round(keplerOrbitElements.Inclination * 100f) / 100f}°";
         _orbitalPeriodText.text = $"Orbital Period: {SecondsToDateString(Mathf.RoundToInt(keplerOrbitElements.OrbitalPeriod))}";
     }
 
