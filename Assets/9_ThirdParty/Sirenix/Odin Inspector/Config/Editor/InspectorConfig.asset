@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1137305049, guid: a4865f1ab4504ed8a368670db22f409c, type: 3}
+  m_Name: InspectorConfig
+  m_EditorClassIdentifier: 
+  enableOdinInInspector: 1
+  defaultEditorBehaviour: 15
+  processMouseMoveInInspector: 1
+  drawingConfig:
+    configs:
+    - DrawnTypeName: Global.RewardManager, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: Global.EventController, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: Global.Controller, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.BarInfo, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.BarMeshGenerator, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.BoxPathGenerator, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.BubbleGraphFeed, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.CanvasCandle, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.CanvasCandleGraphic, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.CanvasLines, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.CanvasLinesHover, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.CharItemEffectController, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.ChartItem, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.ChartItemEvents, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.ChartItemGrowEffect, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.ChartItemMaterialLerpEffect, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.ChartItemNoDelete, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.ChartItemTextBlend, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.ChartMaterialController, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.CustomChartPointer, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.CustomPathGenerator, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.CylinderPathGenerator, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.FillPathGenerator, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.InfoBox, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.LineRendererPathGenerator, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.PieAnimation, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.PieInfo, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.PyramidCanvasGenerator, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.RadarFill, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.RadarFillGenerator, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.SelectScene, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.SensitivityControl, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.TextDirection, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.WorldSpacePieGenerator, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.Axis.AxisGenerator, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.Legened.CanvasLegend, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: ChartAndGraph.Legened.CanvasLegendItem, Assembly-CSharp
+      EditorTypeName: 
+    - DrawnTypeName: GraphChartFeed, Assembly-CSharp
+      EditorTypeName: Sirenix.OdinInspector.Editor.OdinEditor, Sirenix.OdinInspector.Editor
