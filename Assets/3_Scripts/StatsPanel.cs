@@ -37,17 +37,30 @@ public class StatsPanel : MonoBehaviour
         _thrustText.text = $"Thrust: {Mathf.RoundToInt(rocketController.GetThrust() / 1000f)}Kn";
 
         KeplerOrbitElements keplerOrbitElements = rocketController.ComputeRocketOrbitalElements();
-        float apoapsisAltitude = Mathf.RoundToInt(Mathf.Clamp(keplerOrbitElements.ApoapsisRadius - Planet.Instance.RadiusSeaLevel, 0f, float.MaxValue));
-        float periapsisAltitude = Mathf.RoundToInt(Mathf.Clamp(keplerOrbitElements.PeriapsisRadius - Planet.Instance.RadiusSeaLevel, 0f, float.MaxValue));
+        int apoapsisAltitude = Mathf.RoundToInt(Mathf.Clamp(keplerOrbitElements.ApoapsisRadius - Planet.Instance.RadiusSeaLevel, 0f, float.MaxValue));
+        int periapsisAltitude = Mathf.RoundToInt(Mathf.Clamp(keplerOrbitElements.PeriapsisRadius - Planet.Instance.RadiusSeaLevel, 0f, float.MaxValue));
 
-        _apoapsisText.text = $"{apoapsisAltitude.ToString(CultureInfo.CurrentCulture).PadLeft(7, '0')}m";
-        _periapsisText.text = $"{periapsisAltitude.ToString(CultureInfo.CurrentCulture).PadLeft(7, '0')}m";
-        _inclinationText.text = $"Inclination: {Mathf.Round(keplerOrbitElements.Inclination * 100f) / 100f}°";
+        bool apoUseKM = apoapsisAltitude >= 10000;
+        bool periUseKM = periapsisAltitude >= 10000;
+
+        apoapsisAltitude = apoapsisAltitude >= 10000 ? apoapsisAltitude / 1000 : apoapsisAltitude;
+        periapsisAltitude = periapsisAltitude >= 10000 ? periapsisAltitude / 1000 : periapsisAltitude;
+
+        _apoapsisText.text = $"{apoapsisAltitude.ToString(CultureInfo.CurrentCulture).PadLeft(7, '0')}{(apoUseKM ? "km" : "m")}";
+        _periapsisText.text = $"{periapsisAltitude.ToString(CultureInfo.CurrentCulture).PadLeft(7, '0')}{(periUseKM ? "km" : "m")}";
+        //_inclinationText.text = $"Inclination: {Mathf.Round(keplerOrbitElements.Inclination * 100f) / 100f}°";
+        _inclinationText.text = $"Inclination: 0°";
         _orbitalPeriodText.text = $"Orbital Period: {SecondsToDateString(Mathf.RoundToInt(keplerOrbitElements.OrbitalPeriod))}";
     }
 
     private static string SecondsToDateString(int totalSeconds)
     {
+        if (totalSeconds < 0)
+            return "Undefined";
+
+        if (totalSeconds >= 1000000000) // Roughly 11,500 years
+            return "Undefined";
+        
         TimeSpan timeSpan = TimeSpan.FromSeconds(totalSeconds);
         string days = $"{timeSpan.Days}d ";
         string hours = $"{timeSpan.Hours}h ";

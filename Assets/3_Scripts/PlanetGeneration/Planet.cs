@@ -33,9 +33,11 @@ public class Planet : SceneSingleton<Planet>
 
     private void Update()
     {
-        float rocketSeaLevelAltitude = Vector3.Distance(TestRocketController.Instance.transform.position, transform.position) - _radiusSeaLevel;
+        float rocketSeaLevelAltitude = TestRocketController.Instance.GetRealPosition().magnitude - _radiusSeaLevel;
 
-        //_camera.backgroundColor = _atmosphereGradient.Evaluate(Mathf.Clamp01(rocketSeaLevelAltitude / _atmosphereThickness));
+        _camera.backgroundColor = _atmosphereGradient.Evaluate(Mathf.Clamp01(rocketSeaLevelAltitude / _atmosphereThickness));
+        
+        Debug.Log(rocketSeaLevelAltitude / _atmosphereThickness);
     }
 
     public float GetAltitude(Transform target)

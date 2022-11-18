@@ -5,7 +5,7 @@ using GoodHub.Core.Runtime;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TestRocketController : SceneSingleton<TestRocketController>
+public class TestRocketController : SceneSingleton<TestRocketController>, ITrackableTarget
 {
 
     private Rigidbody _rigidbody;
@@ -18,7 +18,7 @@ public class TestRocketController : SceneSingleton<TestRocketController>
     [SerializeField] private ParticleSystem _rocketExhaustPartSys;
 
     private float _defaultParticlesPerSecond;
-    
+
     private float _thrust;
 
     public Transform _planetTransform;
@@ -27,17 +27,15 @@ public class TestRocketController : SceneSingleton<TestRocketController>
     {
         _throttleInput.value = 0;
         _defaultParticlesPerSecond = _rocketExhaustPartSys.emission.rateOverTime.constant;
-        
-        Debug.Log(GetRealPosition());
     }
 
     private void Update()
     {
         _thrust = _maxThrust * _throttleInput.value;
-        
+
         ParticleSystem.EmissionModule exhaustEmissionModule = _rocketExhaustPartSys.emission;
-        exhaustEmissionModule.rateOverTime = new ParticleSystem.MinMaxCurve( _defaultParticlesPerSecond * _throttleInput.value);
-            
+        exhaustEmissionModule.rateOverTime = new ParticleSystem.MinMaxCurve(_defaultParticlesPerSecond * _throttleInput.value);
+
         NavBallController.Instance.GetTargetYawAndPitch(out float yaw, out float pitch);
         SetPitchAndYaw(pitch, yaw);
     }
@@ -52,7 +50,7 @@ public class TestRocketController : SceneSingleton<TestRocketController>
         Vector3 pitchRotationAxis = Vector3.Cross(yawVector, planetSurfaceUp).normalized;
         Vector3 finalVector = Quaternion.AngleAxis(-pitch, pitchRotationAxis) * yawVector;
 
-        transform.rotation = Quaternion.Lerp(transform.rotation, 
+        transform.rotation = Quaternion.Lerp(transform.rotation,
             Quaternion.LookRotation(finalVector, planetSurfaceUp), _massEffectOnRotationSpeed.Evaluate(_rigidbody.mass) * Time.deltaTime);
     }
 
@@ -96,10 +94,12 @@ public class TestRocketController : SceneSingleton<TestRocketController>
     {
         return transform.position - FloatingOrigin.Instance.transform.position;
     }
-    
+
     public KeplerOrbitElements ComputeRocketOrbitalElements()
     {
         return KeplerOrbitElements.FromCartesianStateVector(GetRealPosition(), _rigidbody.velocity, (float) Planet.Instance.Mass);
     }
+
+    public Vector3 GetPosition() => GetRealPosition();
 
 }

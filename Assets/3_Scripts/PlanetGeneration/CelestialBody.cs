@@ -24,9 +24,6 @@ public class CelestialBody : MonoBehaviour
         _rigidbody.AddForce(_initialVelocity, ForceMode.VelocityChange);
         
         KeplerOrbitElements keplerOrbitElements = KeplerOrbitElements.FromCartesianStateVector(transform.position, _initialVelocity, (float) _parent.mass, _rigidbody.mass);
-        Debug.Log(keplerOrbitElements);
-        
-        keplerOrbitElements.GetOrbitalPath();
     }
 
     private void FixedUpdate()
@@ -92,7 +89,7 @@ public struct KeplerOrbitElements
         float gravParam = (float) (OrbitalConstants.GRAVITATIONAL_CONSTANT * (m1 + m2)); // Gravitational parameter
 
         Vector3 orbMom = InvCross(p, r); // Orbital momentum
-        Debug.DrawRay(Vector3.zero, orbMom, Color.yellow, 999f);
+        //Debug.DrawRay(Vector3.zero, orbMom, Color.yellow, 999f);
 
         elements.Inclination = Mathf.Acos(orbMom.y / orbMom.magnitude); // Inclination
 
@@ -107,7 +104,7 @@ public struct KeplerOrbitElements
         if (Mathf.Abs(elements.Inclination) < 0.01f * Mathf.Deg2Rad || Mathf.Abs(elements.Inclination) > 179.99f * Mathf.Deg2Rad)
             n = Vector3.right;
         
-        Debug.DrawRay(Vector3.zero, n, Color.red, 999f);
+        //Debug.DrawRay(Vector3.zero, n, Color.red, 999f);
 
         elements.ArgumentOfPeriapsis = Mathf.Acos(Vector3.Dot(n, ev) / (n.magnitude * ev.magnitude)); // Argument of periapsis
         if (ev.y <= 0)
@@ -136,8 +133,8 @@ public struct KeplerOrbitElements
 
         elements.OrbitalPeriod = twoPI * Mathf.Sqrt(Mathf.Pow(elements.SemiMajorAxis, 3) / gravParam);
 
-        Debug.DrawRay(Vector3.zero, ev.normalized * elements.PeriapsisRadius, Color.blue, 999f);
-        Debug.DrawRay(Vector3.zero, -ev.normalized * elements.ApoapsisRadius, Color.blue, 999f);
+        //Debug.DrawRay(Vector3.zero, ev.normalized * elements.PeriapsisRadius, Color.blue, 999f);
+        //Debug.DrawRay(Vector3.zero, -ev.normalized * elements.ApoapsisRadius, Color.blue, 999f);
 
         return elements;
     }
@@ -216,14 +213,6 @@ public struct KeplerOrbitElements
         y = Mathf.Sin(LongitudeOfAscendingNode) * tempX + Mathf.Cos(LongitudeOfAscendingNode) * y;
 
         return new Vector3(-x, z, y);
-    }
-
-    public List<Vector3> GetOrbitalPath()
-    {
-        List<Vector3> orbitPathPoints = new List<Vector3>();
-
-
-        return orbitPathPoints;
     }
 
     public static Vector3 InvCross(Vector3 a, Vector3 b) => Vector3.Cross(a, b) * -1f;

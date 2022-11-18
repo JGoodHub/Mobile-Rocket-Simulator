@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sirenix.Utilities;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -14,17 +15,38 @@ public static class CubeSphereGenerator
 
         CubeSphere cubeSphere = cubeSphereGameObject.AddComponent<CubeSphere>();
 
-        cubeSphere.SphereFaces.Add(GenerateCubeSphereFace("RearFace", cubeSphereGameObject.transform, Vector3.back, Vector3.right, Vector3.up, cubeSphereSettings, pointHeightFunction));
-
-        if (singleFacePreview == false)
+        if (singleFacePreview)
         {
             cubeSphere.SphereFaces.Add(GenerateCubeSphereFace("FrontFace", cubeSphereGameObject.transform, Vector3.forward, Vector3.left, Vector3.up, cubeSphereSettings, pointHeightFunction));
+        }
+        else
+        {
+            CubeSphereFace leftCubeSphereFace = GenerateCubeSphereFace("LeftFace", cubeSphereGameObject.transform, Vector3.right, Vector3.forward, Vector3.up, cubeSphereSettings, pointHeightFunction);
+            CubeSphereFace topCubeSphereFace = GenerateCubeSphereFace("TopFace", cubeSphereGameObject.transform, Vector3.up, Vector3.left, Vector3.back, cubeSphereSettings, pointHeightFunction);
+            CubeSphereFace frontCubeSphereFace = GenerateCubeSphereFace("FrontFace", cubeSphereGameObject.transform, Vector3.forward, Vector3.left, Vector3.up, cubeSphereSettings, pointHeightFunction);
+            CubeSphereFace bottomCubeSphereFace = GenerateCubeSphereFace("BottomFace", cubeSphereGameObject.transform, Vector3.down, Vector3.left, Vector3.forward, cubeSphereSettings, pointHeightFunction);
+            CubeSphereFace rightCubeSphereFace = GenerateCubeSphereFace("RightFace", cubeSphereGameObject.transform, Vector3.left, Vector3.back, Vector3.up, cubeSphereSettings, pointHeightFunction);
+            CubeSphereFace rearCubeSphereFace = GenerateCubeSphereFace("RearFace", cubeSphereGameObject.transform, Vector3.back, Vector3.right, Vector3.up, cubeSphereSettings, pointHeightFunction);
 
-            cubeSphere.SphereFaces.Add(GenerateCubeSphereFace("LeftFace", cubeSphereGameObject.transform, Vector3.left, Vector3.back, Vector3.up, cubeSphereSettings, pointHeightFunction));
-            cubeSphere.SphereFaces.Add(GenerateCubeSphereFace("RightFace", cubeSphereGameObject.transform, Vector3.right, Vector3.forward, Vector3.up, cubeSphereSettings, pointHeightFunction));
+            // Transform the face uvs to cubic coordinates
+            const float oneThird = 1f / 3f;
 
-            cubeSphere.SphereFaces.Add(GenerateCubeSphereFace("TopFace", cubeSphereGameObject.transform, Vector3.up, Vector3.right, Vector3.forward, cubeSphereSettings, pointHeightFunction));
-            cubeSphere.SphereFaces.Add(GenerateCubeSphereFace("BottomFace", cubeSphereGameObject.transform, Vector3.down, Vector3.right, Vector3.back, cubeSphereSettings, pointHeightFunction));
+            leftCubeSphereFace.TransformUVs(new Vector2(0.25f, oneThird), new Vector2(0f, oneThird));
+            topCubeSphereFace.TransformUVs(new Vector2(0.25f, oneThird), new Vector2(0.25f, oneThird * 2));
+            frontCubeSphereFace.TransformUVs(new Vector2(0.25f, oneThird), new Vector2(0.25f, oneThird));
+            bottomCubeSphereFace.TransformUVs(new Vector2(0.25f, oneThird), new Vector2(0.25f, 0f));
+            rightCubeSphereFace.TransformUVs(new Vector2(0.25f, oneThird), new Vector2(0.5f, oneThird));
+            rearCubeSphereFace.TransformUVs(new Vector2(0.25f, oneThird), new Vector2(0.75f, oneThird));
+
+            cubeSphere.SphereFaces = new List<CubeSphereFace>
+            {
+                rightCubeSphereFace,
+                topCubeSphereFace,
+                frontCubeSphereFace,
+                bottomCubeSphereFace,
+                leftCubeSphereFace,
+                rearCubeSphereFace
+            };
         }
 
         return cubeSphere;
@@ -32,6 +54,8 @@ public static class CubeSphereGenerator
 
     private static CubeSphereFace GenerateCubeSphereFace(string faceName, Transform parent, Vector3 normal, Vector3 right, Vector3 up, CubeSphereSettings settings, Func<Vector3, float> pointHeightFunction)
     {
+        // Right/Up are in the reference frame of looking at the face straight on in the opposing direction to the normal
+
         GameObject faceGameObject = new GameObject(faceName);
         faceGameObject.transform.parent = parent;
 
@@ -43,21 +67,25 @@ public static class CubeSphereGenerator
 
         settings.segmentDivisions = Mathf.Clamp(settings.segmentDivisions, 0, settings.subDivisions);
 
-        int chunksPerAxis = Mathf.RoundToInt(Mathf.Pow(2, settings.segmentDivisions));
-        float perChunkRadius = settings.radius / chunksPerAxis;
-        int perChunkSubDivisions = settings.subDivisions - settings.segmentDivisions;
-        int facesPerChunkAxis = Mathf.RoundToInt(Mathf.Pow(2, perChunkSubDivisions));
-        int verticesPerChunkAxis = facesPerChunkAxis + 1;
-        float vertexSpacing = (perChunkRadius * 2f) / facesPerChunkAxis;
+        int chunksPerAxis = Mathf.RoundToInt(Mathf.Pow(2, settings.segmentDivisions)); // Number of chunks per row of a single face
+        float perChunkRadius = settings.radius / chunksPerAxis; // The radius of a single chunk
+        int perChunkSubDivisions = settings.subDivisions - settings.segmentDivisions; // How many times is each chunk subdivided to achieve the total target
+        int facesPerChunkAxis = Mathf.RoundToInt(Mathf.Pow(2, perChunkSubDivisions)); // Total number of quads for each chunk
+        int verticesPerChunkAxis = facesPerChunkAxis + 1; // Number of vertices per row of a single chunk (+1 to account for the corner at the end)
+        float vertexSpacing = (perChunkRadius * 2f) / facesPerChunkAxis; // The distance between each vertex in the chunk
 
-        cubeSphereFace.Origin = normal * settings.radius;
-        cubeSphereFace.Corner = cubeSphereFace.Origin - (right * settings.radius) + (up * settings.radius) + (right * perChunkRadius) - (up * perChunkRadius); // Represents the centre point of the top left chunk
+        cubeSphereFace.Origin = normal * settings.radius; // Centre of the face
+        Vector3 cubeSphereFaceCornerTL = cubeSphereFace.Origin - (right * settings.radius) + (up * settings.radius); // Represents the vertex at the top left most point on the face
 
+        Vector3 cornerChunkOrigin = cubeSphereFaceCornerTL + (right * perChunkRadius) - (up * perChunkRadius); // Represents the centre point of the top left chunk
+
+        //Calculate the centre of each chunk in this face
         List<Vector3> chunkOffsets = new List<Vector3>();
         for (int y = 0; y < chunksPerAxis; y++)
             for (int x = 0; x < chunksPerAxis; x++)
-                chunkOffsets.Add(cubeSphereFace.Corner + (right * (x * perChunkRadius * 2f)) - (up * (y * perChunkRadius * 2f)));
+                chunkOffsets.Add(cornerChunkOrigin + (right * (x * perChunkRadius * 2f)) - (up * (y * perChunkRadius * 2f)));
 
+        //Generate the mesh for each chunk in this face
         for (int index = 0; index < chunkOffsets.Count; index++)
         {
             GameObject segmentGameObject = new GameObject($"{faceName}_Chunk_{index}");
@@ -69,19 +97,38 @@ public static class CubeSphereGenerator
             segment.MeshFilter = segmentGameObject.AddComponent<MeshFilter>();
             segment.MeshRenderer = segmentGameObject.AddComponent<MeshRenderer>();
 
-            Mesh faceMesh = new Mesh();
-            faceMesh.name = $"{segmentGameObject.name}_Mesh";
-            faceMesh.indexFormat = perChunkSubDivisions <= 7 ? IndexFormat.UInt16 : IndexFormat.UInt32;
+            Mesh chunkMesh = new Mesh();
+            chunkMesh.name = $"{segmentGameObject.name}_Mesh";
+            chunkMesh.indexFormat = perChunkSubDivisions <= 7 ? IndexFormat.UInt16 : IndexFormat.UInt32;
 
-            // Vertices
+            // Vertices & UVs
 
             List<Vector3> vertices = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
 
-            segment.Corner = segment.Origin - (right * perChunkRadius) + (up * perChunkRadius); // Represents the top left corner of the face
+            Vector3 segmentCornerTL = segment.Origin - (right * perChunkRadius) + (up * perChunkRadius); // Represents the top left corner of the face
 
             for (int y = 0; y < verticesPerChunkAxis; y++)
+            {
                 for (int x = 0; x < verticesPerChunkAxis; x++)
-                    vertices.Add(segment.Corner + (right * (x * vertexSpacing)) - (up * (y * vertexSpacing)));
+                {
+                    // Vertex
+                    Vector3 vertex = segmentCornerTL + (right * (x * vertexSpacing)) - (up * (y * vertexSpacing));
+                    vertices.Add(vertex);
+
+                    // UV
+                    Vector3 flattedHorizontal = vertex;
+                    flattedHorizontal.Scale(right);
+                    float isolatedHorizontalUV = ((flattedHorizontal.x + flattedHorizontal.y + flattedHorizontal.z) / (settings.radius * 2f)) + 0.5f;
+
+                    Vector3 flattedVertical = vertex;
+                    flattedVertical.Scale(up);
+                    float isolatedVerticalUV = ((flattedVertical.x + flattedVertical.y + flattedVertical.z) / (settings.radius * 2f)) + 0.5f;
+
+                    Vector2 uv = new Vector2(isolatedHorizontalUV, isolatedVerticalUV);
+                    uvs.Add(uv);
+                }
+            }
 
             // Triangles
 
@@ -96,29 +143,32 @@ public static class CubeSphereGenerator
                 triangles.AddRange(new[] {i, i + verticesPerChunkAxis + 1, i + verticesPerChunkAxis});
             }
 
-            // Spherising & normals
+            // Spherising
 
             for (int v = 0; v < vertices.Count; v++)
-            {
                 vertices[v] = vertices[v].normalized * settings.radius;
-            }
 
             // Apply the noise offset
 
-            for (int v = 0; v < vertices.Count; v++)
+            if (pointHeightFunction != null)
             {
-                float heightOffset = pointHeightFunction(vertices[v]);
-                vertices[v] += vertices[v].normalized * heightOffset;
+                for (int v = 0; v < vertices.Count; v++)
+                {
+                    float heightOffset = pointHeightFunction(vertices[v]);
+                    vertices[v] += vertices[v].normalized * heightOffset;
+                }
             }
-
+            
             // Mesh building
 
-            faceMesh.vertices = vertices.ToArray();
-            faceMesh.triangles = triangles.ToArray();
+            chunkMesh.vertices = vertices.ToArray();
+            chunkMesh.uv = uvs.ToArray();
+            chunkMesh.triangles = triangles.ToArray();
 
-            segment.MeshFilter.sharedMesh = faceMesh;
-            faceMesh.RecalculateNormals();
-            faceMesh.RecalculateBounds();
+            segment.MeshFilter.sharedMesh = chunkMesh;
+            chunkMesh.RecalculateNormals();
+            chunkMesh.RecalculateBounds();
+            chunkMesh.RecalculateTangents();
 
             cubeSphereFace.Segments.Add(segment);
         }

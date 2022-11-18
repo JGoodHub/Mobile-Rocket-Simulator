@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ScaledSpaceCameraController : MonoBehaviour
+public class ScaledSpaceCameraController : MonoBehaviour, ITrackableTarget
 {
 
     private Camera _camera;
@@ -24,4 +24,10 @@ public class ScaledSpaceCameraController : MonoBehaviour
         transform.position = floatingOriginOffset + cameraPosition;
         transform.rotation = _camera.transform.rotation;
     }
+
+    public Vector3 GetPosition()
+    {
+        return transform.position;
+    }
+
 }
