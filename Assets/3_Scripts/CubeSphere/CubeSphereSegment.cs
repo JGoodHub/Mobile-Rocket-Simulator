@@ -5,10 +5,24 @@ using UnityEngine;
 public class CubeSphereSegment : MonoBehaviour
 {
 
-    public Vector3 Origin;
+    public Vector3 origin;
 
-    public MeshFilter MeshFilter;
-    public MeshRenderer MeshRenderer;
+    public MeshFilter meshFilter;
+    public MeshRenderer meshRenderer;
 
+    public bool GetNormalOfConnectedVertex(Vector3 vertex, out Vector3 normal)
+    {
+        Mesh mesh = meshFilter.sharedMesh;
+        int associatedVertexIndex = mesh.vertices.ToList().FindIndex(vert => vert.Equals(vertex));
+
+        if (associatedVertexIndex == -1)
+        {
+            normal = Vector3.zero;
+            return false;
+        }
+
+        normal = mesh.normals[associatedVertexIndex];
+        return true;
+    }
 
 }

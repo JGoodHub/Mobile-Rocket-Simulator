@@ -20,7 +20,7 @@ public class CubeSphere : MonoBehaviour
         }
     }
 
-    public List<CubeSphereSegment> SphereSegments
+    public List<CubeSphereSegment> Segments
     {
         get
         {
@@ -35,7 +35,7 @@ public class CubeSphere : MonoBehaviour
         get
         {
             List<Vector3> vertices = new List<Vector3>();
-            SphereSegments.ForEach(segment => vertices.AddRange(segment.MeshFilter.sharedMesh.vertices));
+            Segments.ForEach(segment => vertices.AddRange(segment.meshFilter.sharedMesh.vertices));
             return vertices;
         }
     }
@@ -45,7 +45,7 @@ public class CubeSphere : MonoBehaviour
         get
         {
             List<Vector2> uvs = new List<Vector2>();
-            SphereSegments.ForEach(segment => uvs.AddRange(segment.MeshFilter.sharedMesh.uv));
+            Segments.ForEach(segment => uvs.AddRange(segment.meshFilter.sharedMesh.uv));
             return uvs;
         }
     }

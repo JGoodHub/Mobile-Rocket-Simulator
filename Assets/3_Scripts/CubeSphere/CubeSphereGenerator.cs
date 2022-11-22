@@ -92,10 +92,10 @@ public static class CubeSphereGenerator
             segmentGameObject.transform.parent = faceGameObject.transform;
 
             CubeSphereSegment segment = segmentGameObject.AddComponent<CubeSphereSegment>();
-            segment.Origin = chunkOffsets[index];
+            segment.origin = chunkOffsets[index];
 
-            segment.MeshFilter = segmentGameObject.AddComponent<MeshFilter>();
-            segment.MeshRenderer = segmentGameObject.AddComponent<MeshRenderer>();
+            segment.meshFilter = segmentGameObject.AddComponent<MeshFilter>();
+            segment.meshRenderer = segmentGameObject.AddComponent<MeshRenderer>();
 
             Mesh chunkMesh = new Mesh();
             chunkMesh.name = $"{segmentGameObject.name}_Mesh";
@@ -106,7 +106,7 @@ public static class CubeSphereGenerator
             List<Vector3> vertices = new List<Vector3>();
             List<Vector2> uvs = new List<Vector2>();
 
-            Vector3 segmentCornerTL = segment.Origin - (right * perChunkRadius) + (up * perChunkRadius); // Represents the top left corner of the face
+            Vector3 segmentCornerTL = segment.origin - (right * perChunkRadius) + (up * perChunkRadius); // Represents the top left corner of the face
 
             for (int y = 0; y < verticesPerChunkAxis; y++)
             {
@@ -158,22 +158,74 @@ public static class CubeSphereGenerator
                     vertices[v] += vertices[v].normalized * heightOffset;
                 }
             }
-            
+
             // Mesh building
 
             chunkMesh.vertices = vertices.ToArray();
             chunkMesh.uv = uvs.ToArray();
             chunkMesh.triangles = triangles.ToArray();
 
-            segment.MeshFilter.sharedMesh = chunkMesh;
+            segment.meshFilter.sharedMesh = chunkMesh;
             chunkMesh.RecalculateNormals();
             chunkMesh.RecalculateBounds();
             chunkMesh.RecalculateTangents();
 
             cubeSphereFace.Segments.Add(segment);
         }
+        
+        // Edge normal fixing
+
+        for (int y = 0; y < chunksPerAxis; y++)
+        {
+            for (int x = 0; x < chunksPerAxis; x++)
+            {
+                Mesh segmentMesh = cubeSphereFace.Segments[x + y].meshFilter.sharedMesh;
+
+                Mesh[] surroundingMeshes = new Mesh[9];
+
+                Vector3[] vertices = segmentMesh.vertices;
+                Vector3[] normals = segmentMesh.normals;
+                int verticesPerEdge = Mathf.RoundToInt(Mathf.Sqrt(segmentMesh.normals.Length));
+
+                for (int n = 0; n < segmentMesh.normals.Length; n++)
+                {
+                    if (n < verticesPerEdge || n % verticesPerEdge == 0 || n % verticesPerEdge == (verticesPerEdge - 1) || n >= normals.Length - verticesPerEdge)
+                    {
+                        Debug.Log(n);
+                        Debug.DrawRay(vertices[n], normals[n], Color.cyan, 20f);
+                    }
+                }
+            }
+        }
+
+// * * * * *
+// * * * * *
+// * * * * *
+// * * * * *
+// * * * * *
+
+// 0, 1, 2, 3, 4,
+// 5, 9,
+// 10, 14,
+// 15, 19,
+// 20, 21, 22, 23, 24
 
         return cubeSphereFace;
+    }
+
+    private static void FixSegmentSeams(CubeSphere cubeSphere)
+    {
+        // Pre compute adjacent segments
+        Dictionary<CubeSphereSegment, List<CubeSphereSegment>> adjacentSegments = new Dictionary<CubeSphereSegment, List<CubeSphereSegment>>();
+        foreach (CubeSphereSegment segment in cubeSphere.Segments)
+        {
+            List<CubeSphereSegment> segmentsByDistance = cubeSphere.Segments.OrderBy(seg => Vector3.Distance(segment.origin, seg.origin)).ToList();
+            segmentsByDistance.RemoveAt(0);
+
+            adjacentSegments.Add(segment, segmentsByDistance.GetRange(0, 8));
+        }
+        
+        
     }
 
 }

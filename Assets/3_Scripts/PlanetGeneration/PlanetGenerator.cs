@@ -52,9 +52,9 @@ public class PlanetGenerator : MonoBehaviour
         _planetColourSettings.Material.SetFloat("_seaLevel", _cubeSphereSettings.radius);
         _planetColourSettings.Material.SetTexture("_gradient", _planetColourSettings.ConvertGradientToTexture2D());
 
-        foreach (CubeSphereSegment segment in planet.SphereSegments)
+        foreach (CubeSphereSegment segment in planet.Segments)
         {
-            segment.MeshRenderer.sharedMaterial = _planetColourSettings.Material;
+            segment.meshRenderer.sharedMaterial = _planetColourSettings.Material;
         }
     }
 
@@ -193,7 +193,7 @@ public class PlanetGenerator : MonoBehaviour
                 CubeSphere planetLOD = CubeSphereGenerator.GenerateSegmentedCubeSphere($"{_exportSettings.PlanetName}_LOD{lodLevel}", transform, _cubeSphereSettings, PlanetElevationFunction);
 
                 // Append the LOD level to each mesh
-                foreach (CubeSphereSegment sphereSegment in planetLOD.SphereSegments)
+                foreach (CubeSphereSegment sphereSegment in planetLOD.Segments)
                     sphereSegment.name += $"_LOD{lodLevel}";
 
                 // Export the completed lod planet

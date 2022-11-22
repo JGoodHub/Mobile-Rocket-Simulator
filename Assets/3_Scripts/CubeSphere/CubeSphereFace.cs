@@ -12,7 +12,7 @@ public class CubeSphereFace : MonoBehaviour
     {
         foreach (CubeSphereSegment sphereSegment in Segments)
         {
-            Mesh sharedMesh = sphereSegment.MeshFilter.sharedMesh;
+            Mesh sharedMesh = sphereSegment.meshFilter.sharedMesh;
             Vector2[] uvs = sharedMesh.uv;
 
             for (int i = 0; i < uvs.Length; i++)
